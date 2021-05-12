@@ -2,39 +2,40 @@ import { Container, Form, Button } from "react-bootstrap";
 import React from "react";
 import axios from "axios";
 import "./styles.css";
-require("dotenv").config();
-
-function get(address) {
-  axios
-    .get(
-      "https://api.etherscan.io/api?module=account&action=balance&address=" +
-        address +
-        "&tag=latest&apikey=XT2IBW3VGV2HJVKY7VIXSKHJ2G48GFG64Z"
-    )
-    .then(function (response) {
-      console.log(response);
-      this.setState((state) => {
-      });
-      console.log(this.result);
-    });
-
-  axios
-    .get("https://api.etherscan.io/api?module=stats&action=ethprice&apikey=XT2IBW3VGV2HJVKY7VIXSKHJ2G48GFG64Z")
-    .then(function (resp) {
-      console.log(resp);
-    });
-}
 
 export default class App extends React.Component {
   state = {
     address: "",
-    result: 0,
-    price: 0
+    result: "",
+    price: ""
+  };
+
+  get = (address) => {
+    axios
+      .get(
+        "https://api.etherscan.io/api?module=account&action=balance&address=" +
+          address +
+          "&tag=latest&apikey=XT2IBW3VGV2HJVKY7VIXSKHJ2G48GFG64Z"
+      )
+      .then((response) => {
+        this.setState({ result: response.data.result / 1000000000000000000 });
+        //console.log(response.data.result);
+        //console.log(response);
+      });
+
+    axios
+      .get(
+        "https://api.etherscan.io/api?module=stats&action=ethprice&apikey=XT2IBW3VGV2HJVKY7VIXSKHJ2G48GFG64Z"
+      )
+      .then((resp) => {
+        this.setState({ price: resp.data.result.ethusd });
+        //console.log(resp);
+      });
   };
 
   onSubmit = () => {
-    console.log(this.state);
-    get(this.state.address);
+    this.get(this.state.address);
+    //console.log(this.state);
   };
 
   render() {
@@ -61,12 +62,21 @@ export default class App extends React.Component {
                 onClick={() => this.onSubmit()}
                 variant="primary"
                 className="mt-3 w-100"
+                pattern="^0x[a-fA-F0-9]{40}$"
               >
                 Find Address
               </Button>
             </Form>
-            <div>
-              Balance: <span>{this.result}</span>
+            <div className="bal mt-2">
+              Balance:{" "}
+              <span className="special">
+                {Number(this.state.result).toFixed(4)}
+              </span>{" "}
+              or{" "}
+              <span className="special">
+                {Number(this.state.result * this.state.price).toFixed(2)}
+              </span>{" "}
+              USD
             </div>
           </div>
         </div>
